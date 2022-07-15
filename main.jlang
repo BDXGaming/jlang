@@ -1,0 +1,20 @@
+// Loads the python print function allowing it to be used in the script without the python.print invocation
+load python.print
+
+// In Jlang what is below can be used
+string test = "test"
+
+// In Jlang this is how you assign a value to an object 
+string data || "This is some data"
+
+// Prints the string using a builtin python method print()
+print(data)
+
+if(data){
+    show | "This is inside of a jlang if statement!"
+
+    // This is a more pythonic format of a for loop
+    for i in range(3){
+        print(f"Hello ${i}")
+    }
+}

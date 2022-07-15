@@ -1,0 +1,244 @@
+import sys
+from io import StringIO
+from exceptions import StringFormattingException, UnknownExpression, VariableAssignmentError
+
+STRING_CONTAINERS = ["'", '"']
+STRING_FORMATTING_ERROR = "String formatting error"
+JLANG_KEYWORDS = ["if", "elif", "else","print", "for", "while"]
+TYPE_KEYWORDS = ['string', "num", "int", "list", "hashmap", "dict"]
+JLANG_SIGNS = ["{", "}"]
+
+variables = {}
+
+
+def check_string(line_string):
+    """ Checks if the string is correctly formatted. """
+
+    if not line_string.__contains__('"') or line_string.__contains__("'"):
+        raise (StringFormattingException(line_string, 0))
+
+    has_start = False
+    string_type = ""
+    final_index = 0
+    for index, char in enumerate(line_string):
+        if char in STRING_CONTAINERS:
+
+            if char in string_type:
+                has_start = False
+                final_index = index
+
+            else:
+                has_start = True
+                string_type += f"\{char}"
+
+    if has_start == True:
+        raise (StringFormattingException(line_string, final_index))
+
+    return True
+
+
+def get_variable_key(line):
+    """ This gets the name of a variable from the line and strips and leading text. """
+
+    assignment = ""
+
+    if "=" in line:
+        assignment = "="
+
+    if "||" in line:
+        assignment = "||"
+
+    if assignment != "":
+        var_key = line[0:line.index(assignment)]
+        var_key = var_key.strip()
+        return var_key
+
+    raise VariableAssignmentError(line)
+
+
+def compile(line, old_indent_level):
+    """ Compiles the jlang into a python file which can be evaluated in python. """
+
+    # Removes any existing whitespace from the line
+    line = line.strip()
+    line = line + "\n"
+    indent_level = old_indent_level
+    return_line = line
+
+    if line.startswith("load"):
+        load= line[line.index("load") +5:]
+
+        if "python." in load:
+            line = ""
+            return_line = line
+
+    if line.__contains__("show | "):
+
+        string_enclosing = []
+        string = line.replace("show | ", "")
+        if string.startswith(" "): string = string[1:]
+
+        is_string = check_string(string)
+
+        if is_string:
+            if string.__contains__("'"): string = string.replace("'", "")
+            if string.__contains__('"'): string = string.replace('"', "")
+            string = string.strip()
+            return_line  =  f"""print("{string}")""" + "\n"
+
+        else:
+            exit()
+
+    # Handles all of the typed variables
+    if any(line.startswith(type_keyword) for type_keyword in TYPE_KEYWORDS):
+        for type_kwd in TYPE_KEYWORDS:
+            if type_kwd in line:
+                return_line = line.replace(type_kwd, "")
+                return_line = return_line.strip()
+                variables[get_variable_key(line)] = type_kwd
+                break
+
+    # Handles all of the conditional functions that are the same in py and jlang
+    if any(line.startswith(pstring) for pstring in JLANG_KEYWORDS):
+
+        if "{" in line and "}" in line and "${" not in line:
+            line = line.replace("{", ":")
+            line = line.replace("}", "")
+
+        elif "${" in line:
+            line = line.replace("${", "{")
+
+        elif "{" in line:
+            line = line.replace("{", ":")
+            indent_level += 1
+
+        elif "}" in line:
+            line = line.replace("}", "")
+            indent_level -= 1
+
+        return_line = line
+
+    # Handles the JLANG indent form
+    elif line.startswith("}"):
+        line = line.replace("}", "")
+        indent_level -= 1
+
+        return_line = line
+
+    # Handles the jlang 
+    if line.startswith("//"):
+        return_line =  line.replace("//", "#")
+
+    # The jlang expression for variable assignemt
+    if "||" in line:
+        return_line =  return_line.replace("||","=")
+
+    indent_line = ""
+
+    for i in range(old_indent_level):
+        indent_line += "   "
+
+    return_line = indent_line + return_line
+    print(variables)
+    return return_line, indent_level
+    
+
+def is_jlang(string: str, line=None):
+    """ Checks if the string is valid jlang """
+
+    string = string.strip()
+    if string.startswith("show"):
+        return True
+
+    if any(string.startswith(pstring) for pstring in JLANG_KEYWORDS):
+        return True
+
+    elif any(string.startswith(type_keyword) for type_keyword in TYPE_KEYWORDS):
+        return True
+
+    if string.startswith("//"):
+        return True
+
+    if string.startswith("load"): return True
+
+    # The jlang function format
+    if string.startswith("func"):
+        return True
+
+    if "||" in string: return True
+
+    if any(string.startswith(sign) for sign in JLANG_SIGNS):
+        return True
+
+    try:
+        old_stdout = sys.stdout
+        sys.stdout = mystdout = StringIO()
+
+        exec(string)
+
+        sys.stdout = old_stdout
+        return True
+    except:
+        raise (UnknownExpression(string, line + 1))
+
+
+def parse_lang(file, dump_py):
+    python_string = "# Script generated by jLang \n"
+    indent_level = 0
+
+    with open(file, "r") as jlang_file:
+        for index, line in enumerate(jlang_file):
+            if is_jlang(line, index):
+                python_output, indent_level = compile(line, indent_level)
+                python_string += python_output
+    if indent_level != 0:
+        raise IndentationError
+
+    with open("compiled_files\\" + file[:file.index(".")] + ".jpy", "w+") as jpy:
+        jpy.write(python_string)
+
+
+if __name__ == "__main__":
+
+    dump_py = False
+    run = True
+    show_result = False
+
+    if len(sys.argv) <= 1:
+        print(f"[ERROR]: The filename must be provided! \n python jlang.py <filename>")
+        exit()
+
+    file = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        if "--as_py" in sys.argv:
+            dump_py = True
+
+        if "--norun" in sys.argv:
+            run = False
+
+        if "--show_py" in sys.argv:
+            show_result = True
+
+    if file.endswith(".jlang"):
+        filename = file.replace(".jlang", "")
+        parse_lang(file, dump_py)
+
+        with open(f"compiled_files/{filename}.jpy", "r") as jpy:
+            compiled = jpy.read()
+
+        if show_result:
+            print(compiled)
+
+        if run: exec(str(compiled.strip()))
+
+    elif file.endswith(".jpy"):
+        with open(f"{file}", "r") as jpy:
+            compiled = jpy.read()
+
+        if show_result:
+            print(compiled)
+
+        if run: exec(str(compiled.strip()))
+
+

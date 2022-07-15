@@ -1,0 +1,3 @@
+func show(data){
+     python.print(data)
+}
