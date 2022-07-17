@@ -1,0 +1,55 @@
+class object{
+
+    func __init__(self, _value){
+        self.value = _value
+    }
+
+    func __string__(self){
+
+        // If the string function was never overridden use the inbuilt python string method
+        return str(self.value)
+    }
+
+    func __str__(self){
+        return self.value.__str__()
+    }
+}
+
+
+class string(object, str){
+
+    members = {}
+    last_key = 0
+
+    func __init__(self, value){
+        super().__init__(value)
+        string.members[string.last_key] = value
+        string.last_key += 1
+    }
+}
+
+class arraylist(object){
+
+    func __init__(self, _value){
+        super().__init__(_value)
+        self.array = _value
+    }
+
+    func __string__(self){
+        string_list = "["
+
+        for index, entry in enumerate(self.array){
+            string_list += f"{entry}"
+
+            if index+1 < len(self.array){ string_list += ", "}
+        }
+        return string(string_list+ "]")
+
+    }
+
+    // This allows for the use of python iteration
+    func __iter__(self){
+        return self.array.__iter__()
+    }
+
+}

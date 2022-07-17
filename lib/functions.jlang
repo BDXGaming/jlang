@@ -1,3 +1,23 @@
 func show(data){
+
+    // Checks if the data passed is a string derived from the jlang string
+    if not isinstance(data, string){
+
+        // This allows for undefined python strings to be used in jlang
+        if not isinstance(data, python.str){
+
+            // This checks if the object is a jlang class or not, uses python __str__ meth if not from jlang
+            if getattr(data, "__string__", None) is None{
+                data = data.__str__()
+            }
+
+            // If the data is a jlang class use the jlang string function
+            else{
+                data = data.__string__()
+            }
+        }
+    }
+
+    // This just invokes the python print function with the data passed
      python.print(data)
 }
