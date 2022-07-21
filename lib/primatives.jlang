@@ -52,4 +52,19 @@ class arraylist(object){
         return self.array.__iter__()
     }
 
+    // This appends the element to the list
+    func append(self, entry){
+        self.array.append(entry)
+    }
+
+    // The removes the element from the list
+    func remove(self, index){
+        self.array.remove(index)
+    }
+
+    // Returns the python list version of the class
+    func __list__(self){
+        return self.array
+    }
+
 }
