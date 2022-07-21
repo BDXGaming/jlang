@@ -11,4 +11,7 @@ JLang does however support native python code via the use of python.<module | me
 load python.print
 
 print("Hello from JLang!")
+
+// This is a JLang string
+string test = "test"
 ```
