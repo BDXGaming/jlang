@@ -1,7 +1,19 @@
+//Checks if the given class object has the jlang __cls__ method indicating the class is a jlang class
+func is_jlang(obj){
+
+    if getattr(obj, "__cls__", None) is not None{
+        return True
+    }
+    else{
+        return False
+    }
+
+}
+
 func show(data){
 
     // Checks if the data passed is a string derived from the jlang string
-    if not isinstance(data, string){
+    if not isinstance(data, String){
 
         // This allows for undefined python strings to be used in jlang
         if not isinstance(data, python.str){
@@ -13,11 +25,26 @@ func show(data){
 
             // If the data is a jlang class use the jlang string function
             else{
-                data = data.__string__()
+                try{
+                    data = data.__string__()
+                }
+                except TypeError{
+                    data = str(data)
+                }
             }
         }
     }
 
     // This just invokes the python print function with the data passed
      python.print(data)
+}
+
+func type(obj){
+    if is_jlang(obj){
+        return obj.__cls__()
+    }
+    else{
+        return type(obj)
+    }
+
 }

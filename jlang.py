@@ -2,17 +2,18 @@ import os
 import re
 import sys
 from io import StringIO
-from exceptions import StringFormattingException, UnknownExpression, VariableAssignmentError
+from exceptions import StringFormattingException, UnknownExpression, VariableAssignmentError, VariableTypeError, VariableDefined
 
 STRING_CONTAINERS = ["'", '"']
 STRING_FORMATTING_ERROR = "String formatting error"
-JLANG_KEYWORDS = ["if", "elif", "else", "for", "while", "func", "class", "self."]
+JLANG_KEYWORDS = ["if", "elif", "else", "for", "while", "func", "class", "self.", "try", "except"]
 VARIABLE_KEYWORDS = ["class", "func"]
 # TYPE_KEYWORDS = ['string ', "num", "int", "list", "hashmap", "dict"]
 JLANG_FUNCTION_KEYWORD = "func"
 JLANG_SIGNS = ["{", "}"]
 
 variables = {}
+typed_variables = {}
 loaded_modules = []
 
 
@@ -180,11 +181,18 @@ def compile(line, old_indent_level):
     if any(return_line.startswith(type_keyword+" ") for type_keyword in get_classes()):
         for type_kwd in get_classes():
             if type_kwd in line:
+
                 return_line = line.replace(type_kwd, "")
                 if " " in type_kwd: type_kwd = type_kwd[0:-1]
+
+                if get_variable_key(line) in typed_variables.keys():
+                    if typed_variables[get_variable_key(line)] != type_kwd:
+                        raise VariableDefined(get_variable_key(line))
+
                 data = get_data_from_line(return_line)
                 variables[get_variable_key(line)] = type_kwd
                 return_line = f"{get_variable_key(line)} = {type_kwd}({data})"
+                typed_variables[get_variable_key(line)] = type_kwd
                 break
 
     # Handles all of the conditional functions that are the same in py and jlang
@@ -241,9 +249,6 @@ def is_jlang(string: str, line=None):
         return True
 
     if any(string.startswith(pstring) for pstring in loaded_modules):
-        return True
-
-    elif any(string.startswith(type_keyword) for type_keyword in TYPE_KEYWORDS):
         return True
 
     if any(string.startswith(var) for var in JLANG_FUNCTION_KEYWORD):
@@ -329,6 +334,7 @@ if __name__ == "__main__":
     dump_py = False
     run = True
     show_result = False
+    debug = False
 
     if len(sys.argv) <= 1:
         print(f"[ERROR]: The filename must be provided! \n python jlang.py <filename>")
@@ -345,6 +351,9 @@ if __name__ == "__main__":
 
         if "--show_py" in sys.argv:
             show_result = True
+
+        if "--debug" in sys.argv:
+            debug = True
 
     if file.endswith(".jlang"):
         filename = file.replace(".jlang", "")
@@ -367,4 +376,7 @@ if __name__ == "__main__":
 
         if run: exec(str(compiled.strip()))
 
+    if debug:
+        print("#"*45,"\nDebug Information\n","#"*45, sep="")
+        print(f"Typed Variables: {typed_variables}")
 

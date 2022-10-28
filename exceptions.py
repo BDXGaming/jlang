@@ -25,5 +25,22 @@ class VariableAssignmentError(Exception):
 
     def __str__(self):
         return f"Variable `{self.string}` incorrectly assigned."
+        
 
+class VariableTypeError(Exception):
+
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return f"Variable {self.string} incorrectly typed!"
+
+
+class VariableDefined(Exception):
+
+    def __init__(self, string):
+        self.string = string
+
+    def __str__(self):
+        return f"Variable `{self.string}` has already been defined!"
         

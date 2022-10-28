@@ -1,11 +1,18 @@
 // Loads the python print function allowing it to be used in the script without the python.print invocation
 load python.print
+load python.module.sys
 
 // In Jlang what is below can be used
-string test = "test"
+String test = "test"
+
+// A JLang Integer
+Integer var = 10
+var = "Test" 
+Map m = {} // Creates a JLang map
+sys.stdout.write("test for sys\n")
 
 // In Jlang this is how you assign a value to an object 
-string data || "This is some data"
+String data || "This is some data"
 
 // Prints the string using a builtin python method print()
 print(data)
@@ -18,3 +25,11 @@ if(data){
         print(f"Hello ${i}")
     }
 }
+ArrayList ls = ["test","test1"]
+
+// A For each loop in jlang
+for ele in ls{
+    print(f"${ele}")
+}
+
+print(ls)

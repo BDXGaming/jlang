@@ -13,22 +13,26 @@ class object{
     func __str__(self){
         return self.value.__str__()
     }
+
+    func __cls__(){
+        return self.__class__()
+    }
 }
 
 
-class string(object, str){
+class String(object, str){
 
     members = {}
     last_key = 0
 
     func __init__(self, value){
         super().__init__(value)
-        string.members[string.last_key] = value
-        string.last_key += 1
+        String.members[String.last_key] = value
+        String.last_key += 1
     }
 }
 
-class arraylist(object){
+class ArrayList(object){
 
     func __init__(self, _value){
         super().__init__(_value)
@@ -39,7 +43,7 @@ class arraylist(object){
         string_list = "["
 
         for index, entry in enumerate(self.array){
-            string_list += f"{entry}"
+            string_list += f"${entry}"
 
             if index+1 < len(self.array){ string_list += ", "}
         }
@@ -67,4 +71,56 @@ class arraylist(object){
         return self.array
     }
 
+    func __cls__(self){
+        return self.__class__
+    }
+
+}
+
+class Integer(object, int){
+
+    func __init__(self, value){
+
+        if(value.__class__ != int and value.__class__ != Integer){
+            raise VariableTypeError("")
+        }
+
+        super().__init__(value)
+    }
+
+    func __cls__(self){
+        return self.__class__
+    }
+}
+
+class Float(object, float){
+
+    func __init__(self, value){
+
+        if(value.__class__ != float and value.__class__ != Float){
+            raise VariableTypeError("")
+        }
+
+        super().__init__(value)
+    }
+
+    func __cls__(self){
+        return self.__class__
+    }
+}
+
+class Map(object, dict){
+
+    func __init__(self, value){
+
+        if(value.__class__ != dict and value.__class__ != Map){
+            raise VariableTypeError("")
+        }
+
+        super().__init__(value)
+    }
+
+    func __cls__(self){
+        return self.__class__
+    }
 }
