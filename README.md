@@ -13,5 +13,5 @@ load python.print
 print("Hello from JLang!")
 
 // This is a JLang string
-string test = "test"
+String test = "test"
 ```
