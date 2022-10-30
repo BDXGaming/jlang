@@ -44,3 +44,4 @@ class VariableDefined(Exception):
     def __str__(self):
         return f"Variable `{self.string}` has already been defined!"
         
+        
