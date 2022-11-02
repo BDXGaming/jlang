@@ -55,7 +55,10 @@ def get_variable_key(line):
         assignment = "||"
 
     if assignment != "":
-        var_key = line[line.index(" "):line.index(assignment)]
+        if line.index(" ") < line.index(assignment):
+            var_key = line[line.index(" "):line.index(assignment)]
+        else:
+            var_key = line[0:line.index(assignment)]
         var_key = var_key.strip()
         return var_key
 
@@ -160,6 +163,7 @@ def compile(line, old_indent_level):
     if "${" in return_line:
         return_line = return_line.replace("${", "{")
 
+    # Handles the specific odd syntax of the show function
     if return_line.__contains__("show | "):
 
         string_enclosing = []
@@ -194,6 +198,18 @@ def compile(line, old_indent_level):
                 return_line = f"{get_variable_key(line)} = {type_kwd}({data})"
                 typed_variables[get_variable_key(line)] = type_kwd
                 break
+
+    elif "=" in line and "==" not in line:
+
+
+        if " " not in (line[0:line.index("=")]).strip():
+            var = (line[0:line.index("=")]).strip()
+            if var in typed_variables.keys():
+                data = return_line[return_line.index("=")+1:]
+                return_line = var + ".reassign("+data.strip()+")"
+
+    # elif(any(line.startswith(var) for var in typed_variables.keys())):
+    #     print("VAR: ", line)
 
     # Handles all of the conditional functions that are the same in py and jlang
     if any(line.startswith(pstring) for pstring in JLANG_KEYWORDS):

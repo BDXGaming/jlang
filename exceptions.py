@@ -20,11 +20,12 @@ class UnknownExpression(Exception):
 
 class VariableAssignmentError(Exception):
 
-    def __init__(self, string):
+    def __init__(self, string, type_2=None):
         self.string = string
+        self.type_2 = type_2
 
     def __str__(self):
-        return f"Variable `{self.string}` incorrectly assigned."
+        return f"Variable of type `{self.string}` incorrectly assigned to `{self.type_2}`"
         
 
 class VariableTypeError(Exception):
@@ -43,5 +44,4 @@ class VariableDefined(Exception):
 
     def __str__(self):
         return f"Variable `{self.string}` has already been defined!"
-        
         

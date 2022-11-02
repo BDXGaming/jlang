@@ -1,3 +1,5 @@
+load python.module.json
+
 class object{
 
     func __init__(self, _value){
@@ -16,6 +18,21 @@ class object{
 
     func __cls__(){
         return self.__class__()
+    }
+
+    func reassign(self, value, new_cls=None){
+        if new_cls is not None{
+            self.value = value
+        }
+        else{
+            if (value.__class__ != self.value.__class__){
+                raise FixedVariableType(self.__class__, value.__class__)
+            }
+        }
+    }
+
+    func to_json(self){
+        return json.dumps(self, default=lambda o: o.__dict__)
     }
 }
 
@@ -75,6 +92,9 @@ class ArrayList(object){
         return self.__class__
     }
 
+    func to_json(self){
+        return json.dumps(self.array)
+    }
 }
 
 class Integer(object, int){

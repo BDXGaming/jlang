@@ -1,0 +1,11 @@
+class FixedVariableType(Exception){
+
+    func __init__(self, string, type_2=None){
+        self.string = string
+        self.type_2 = type_2
+    }
+
+    func __str__(self){
+        return f"Variable of type `${self.string}` incorrectly assigned to `${self.type_2}`"
+    }
+}
