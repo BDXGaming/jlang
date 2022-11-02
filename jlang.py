@@ -160,7 +160,7 @@ def compile(line, old_indent_level):
         for type_kwd in get_classes():
             if type_kwd in line:
 
-                return_line = line.replace(type_kwd, "")
+                return_line = line.replace(type_kwd, "", 1)
                 if " " in type_kwd: type_kwd = type_kwd[0:-1]
 
                 if get_variable_key(line) in typed_variables.keys():
