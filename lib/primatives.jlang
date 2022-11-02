@@ -21,12 +21,19 @@ class object{
     }
 
     func reassign(self, value, new_cls=None){
+
+        // Adds support for the reclassing of variables if a new class type is provided
         if new_cls is not None{
             self.value = value
         }
         else{
-            if (value.__class__ != self.value.__class__){
+
+            // Checks to ensure the class type of the data matches the type of the variable
+            if (value.__class__ != self.value.__class__ and self.__class__ != value.__class__){
                 raise FixedVariableType(self.__class__, value.__class__)
+            }
+            else{
+                self.value = value
             }
         }
     }
@@ -43,6 +50,7 @@ class String(object, str){
     last_key = 0
 
     func __init__(self, value){
+        value = str(value)
         super().__init__(value)
         String.members[String.last_key] = value
         String.last_key += 1
