@@ -7,8 +7,8 @@ String test = "test"
 
 // A JLang Integer
 Integer var = 10
-var = "Test" 
-Map m = {} // Creates a JLang map
+Map m = {} 
+variable = "test"
 sys.stdout.write("test for sys\n")
 
 // In Jlang this is how you assign a value to an object 
@@ -32,4 +32,4 @@ for ele in ls{
     print(f"${ele}")
 }
 
-print(ls)
+print(json.dumps(ls.to_json()))

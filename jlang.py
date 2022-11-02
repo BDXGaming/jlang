@@ -2,45 +2,19 @@ import os
 import re
 import sys
 from io import StringIO
-from exceptions import StringFormattingException, UnknownExpression, VariableAssignmentError, VariableTypeError, VariableDefined
+from exceptions import UnknownExpression, VariableAssignmentError, VariableDefined
+from utils.helpers import check_string
 
-STRING_CONTAINERS = ["'", '"']
+
 STRING_FORMATTING_ERROR = "String formatting error"
 JLANG_KEYWORDS = ["if", "elif", "else", "for", "while", "func", "class", "self.", "try", "except"]
 VARIABLE_KEYWORDS = ["class", "func"]
-# TYPE_KEYWORDS = ['string ', "num", "int", "list", "hashmap", "dict"]
 JLANG_FUNCTION_KEYWORD = "func"
 JLANG_SIGNS = ["{", "}"]
 
 variables = {}
 typed_variables = {}
 loaded_modules = []
-
-
-def check_string(line_string):
-    """ Checks if the string is correctly formatted. """
-
-    if not line_string.__contains__('"') or line_string.__contains__("'"):
-        raise (StringFormattingException(line_string, 0))
-
-    has_start = False
-    string_type = ""
-    final_index = 0
-    for index, char in enumerate(line_string):
-        if char in STRING_CONTAINERS:
-
-            if char in string_type:
-                has_start = False
-                final_index = index
-
-            else:
-                has_start = True
-                string_type += f"{char}"
-
-    if has_start == True:
-        raise (StringFormattingException(line_string, final_index))
-
-    return True
 
 
 def get_variable_key(line):
