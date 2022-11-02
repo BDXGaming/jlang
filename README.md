@@ -9,9 +9,18 @@ JLang does however support native python code via the use of python.<module | me
 ```c#
 // This loads the Python print method directly into JLang
 load python.print
+load python.module.sys
 
 print("Hello from JLang!")
 
+// Demonstrating the use of a python module in JLang
+sys.stdout.write("Test\n")
+
 // This is a JLang string
 String test = "test"
+
+for i in range(5){
+  // A JLang formatted string
+  print(f"Number: ${i}")
+}
 ```
