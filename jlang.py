@@ -2,8 +2,8 @@ import os
 import re
 import sys
 from io import StringIO
-from exceptions import UnknownExpression, VariableAssignmentError, VariableDefined
-from utils.helpers import check_string
+from exceptions import UnknownExpression, VariableDefined
+from utils.helpers import check_string, generate_final_line, get_variable_key, get_data_from_line
 
 
 STRING_FORMATTING_ERROR = "String formatting error"
@@ -17,28 +17,6 @@ typed_variables = {}
 loaded_modules = []
 
 
-def get_variable_key(line):
-    """ This gets the name of a variable from the line and strips and leading text. """
-
-    assignment = ""
-
-    if "=" in line:
-        assignment = "="
-
-    if "||" in line:
-        assignment = "||"
-
-    if assignment != "":
-        if line.index(" ") < line.index(assignment):
-            var_key = line[line.index(" "):line.index(assignment)]
-        else:
-            var_key = line[0:line.index(assignment)]
-        var_key = var_key.strip()
-        return var_key
-
-    raise VariableAssignmentError(line)
-
-
 def get_classes():
     """ Gets all of the classes in the jlang file to the point currently parsed. """
 
@@ -48,37 +26,6 @@ def get_classes():
         if variables[ele] == "class": classes.append(ele)
 
     return classes
-
-
-def get_data_from_line(line):
-    """ Gets the data paired with a variable which follows a equals sign or a || """
-
-    line = line.strip()
-    line = line.replace("\n", "")
-
-    if "//" in line:
-        if re.findall(r'(".*\/\/.*")', line):
-            line = line[0:line.index("//")]
-
-    data = ""
-    if "||" in line:
-        data = line[line.index("||")+2:]
-
-    elif "=" in line:
-        data = line[line.index("=")+1:]
-
-    return data
-
-
-def generate_final_line(line, indent):
-    """ Generates the line which is transcoded. """
-    indent_line = ""
-
-    for i in range(indent):
-        indent_line += "    "
-
-    return_line = indent_line + line
-    return return_line
 
 
 def compile(line, old_indent_level):
