@@ -17,7 +17,7 @@ class object{
     }
 
     func __cls__(){
-        return self.__class__()
+        return self.__class__
     }
 
     func reassign(self, value, new_cls=None){
@@ -54,6 +54,9 @@ class String(object, str){
         super().__init__(value)
         String.members[String.last_key] = value
         String.last_key += 1
+    }
+    func __cls__(self){
+        return self.__class__
     }
 }
 
@@ -110,7 +113,7 @@ class Integer(object, int){
     func __init__(self, value){
 
         if(value.__class__ != int and value.__class__ != Integer){
-            raise VariableTypeError("")
+            raise FixedVariableType("")
         }
 
         super().__init__(value)
@@ -126,7 +129,7 @@ class Float(object, float){
     func __init__(self, value){
 
         if(value.__class__ != float and value.__class__ != Float){
-            raise VariableTypeError("")
+            raise FixedVariableType("")
         }
 
         super().__init__(value)
@@ -142,7 +145,7 @@ class Map(object, dict){
     func __init__(self, value){
 
         if(value.__class__ != dict and value.__class__ != Map){
-            raise VariableTypeError("")
+            raise FixedVariableType("")
         }
 
         super().__init__(value)
