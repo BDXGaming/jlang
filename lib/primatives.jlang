@@ -89,6 +89,10 @@ class ArrayList(object){
         self.array.append(entry)
     }
 
+    func __add__(self, value){
+        self.append(value)
+    }
+
     // The removes the element from the list
     func remove(self, index){
         self.array.remove(index)

@@ -1,6 +1,7 @@
 // Loads the python print function allowing it to be used in the script without the python.print invocation
 load python.print
 load python.module.sys
+load ANSI
 
 // In Jlang what is below can be used
 String test = "test"
@@ -33,3 +34,5 @@ for ele in ls{
 }
 
 print(json.dumps(ls.to_json()))
+
+print(ANSI.BACKGROUND.RED + "TEST" +ANSI.END)
