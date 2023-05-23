@@ -1,11 +1,14 @@
 # The active version of JLang
 VERSION = "0.0.1"
+BASEDIR = "{BASEDIR}"
 
 import os
 import re
 import sys
+import prints
 from datetime import datetime
 from io import StringIO
+import hashlib
 from exceptions import UnknownExpression, VariableDefined
 from utils.helpers import check_string, generate_final_line, get_variable_key, get_data_from_line
 
@@ -20,6 +23,7 @@ DEFAULT_MODULES = ["exceptions", "functions", "primatives"]
 variables = {}
 typed_variables = {}
 loaded_modules = []
+transpiled = ""
 
 
 def get_classes():
@@ -256,12 +260,13 @@ def parse_lang(file, dump_py):
     indent_level = 0
 
     # Adds the file provided by the end user
+    # FIX: Ident the loaded modules to optimize
     user_file, indent_level_main = generate_lang(f"{file}")
 
     # Adds all of the files in the provided library
-    for file_name in os.listdir("lib"):
+    for file_name in os.listdir(BASEDIR + "lib"):
         if file.endswith(".jlang"):
-            pstring, indent_level = generate_lang(f"lib/{file_name}")
+            pstring, indent_level = generate_lang(f"{BASEDIR}lib/{file_name}")
 
             if file_name[0:file_name.index(".")] in DEFAULT_MODULES:
                 modules += pstring
@@ -271,6 +276,7 @@ def parse_lang(file, dump_py):
     # Adds the file provided by the end user
     user_file, indent_level_main = generate_lang(f"{file}")
     python_string = modules + user_file
+    transpiled = user_file
 
     # If an indentation error is found raise here
     if indent_level_main != 0:
@@ -280,9 +286,22 @@ def parse_lang(file, dump_py):
     if not os.path.isdir("__jcache__"):
         os.mkdir("__jcache__")
 
+    block_string = python_string.encode("utf-8")
+
+    raw_hash = hashlib.sha256(block_string)
+    hex_hash = raw_hash.hexdigest()
+
+    if "/" in file:
+        python_string = f"HASH_{file[file.rindex('/'):file.rindex('.')]}='{hex_hash}'\n" + python_string
+
+    else:
+        python_string = f"HASH_{file[:file.rindex('.')]}='{hex_hash}'\n" + python_string
+
     # Dumps the output into the nearest compiled_files folder
     with open("__jcache__\\" + file[:file.index(".")] + ".jpy", "wb+") as jpy:
         jpy.write(python_string.encode('utf-8'))
+
+    return transpiled
 
 
 if __name__ == "__main__":
@@ -295,7 +314,11 @@ if __name__ == "__main__":
     debug = False
 
     if len(sys.argv) <= 1:
-        print(f"[ERROR]: The filename must be provided! \n python jlang.py <filename>")
+        prints.ColorPrints.printc(f"[ERROR]: The filename must be provided! \njlang <filename>", prints.ColorPrints.RED)
+        exit()
+    
+    if "--version" in sys.argv[1] or "-v" in sys.argv[1]:
+        print(f"JLang Version {VERSION}")
         exit()
 
     file = sys.argv[1]
@@ -319,13 +342,13 @@ if __name__ == "__main__":
 
     if file.endswith(".jlang"):
         filename = file.replace(".jlang", "")
-        parse_lang(file, dump_py)
+        transpiled = parse_lang(file, dump_py)
 
         with open(f"__jcache__/{filename}.jpy", "r") as jpy:
             compiled = jpy.read()
 
         if show_result:
-            print(compiled)
+            print(transpiled)
 
         if run: exec(str(compiled.strip()))
 
@@ -337,7 +360,7 @@ if __name__ == "__main__":
             compiled = jpy.read()
 
         if show_result:
-            print(compiled)
+            print(transpiled)
 
         if run: exec(str(compiled.strip()))
     

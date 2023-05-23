@@ -9,7 +9,7 @@ foreach ($arg in $args) {
 
 $scriptBlock = {
     param($file, $remainder)
-    python jlang.py $file $remainder
+    python {BASEDIR}\jlang.py $file $remainder
 }
 
 Invoke-Command -ScriptBlock $scriptBlock -ArgumentList $file, $remainder
