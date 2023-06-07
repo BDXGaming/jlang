@@ -1,7 +1,3 @@
-# The active version of JLang
-VERSION = "0.0.1"
-BASEDIR = "{BASEDIR}"
-
 import os
 import re
 import sys
@@ -11,6 +7,7 @@ from io import StringIO
 import hashlib
 from exceptions import UnknownExpression, VariableDefined
 from utils.helpers import check_string, generate_final_line, get_variable_key, get_data_from_line
+from utils.constants import VERSION, BASEDIR
 
 
 STRING_FORMATTING_ERROR = "String formatting error"
@@ -19,6 +16,7 @@ VARIABLE_KEYWORDS = ["class", "func"]
 JLANG_FUNCTION_KEYWORD = "func"
 JLANG_SIGNS = ["{", "}"]
 DEFAULT_MODULES = ["exceptions", "functions", "primatives"]
+JCACHE_DIR_NAME = "__jcache__" # The directory name for the cached jpy files
 
 variables = {}
 typed_variables = {}
@@ -64,6 +62,7 @@ def compile(line, old_indent_level):
                 return_line = f"import {mod_type}\n"
 
             return return_line, indent_level
+        
         else:
             module = line[line.index("load ")+5:-1]
             loaded_modules.append(module.lower())
@@ -73,6 +72,7 @@ def compile(line, old_indent_level):
 
     if any(line.startswith(keyword) for keyword in VARIABLE_KEYWORDS):
         first_word = line[0:line.index(" ")]
+
         if first_word in VARIABLE_KEYWORDS:
             key = ""
 
@@ -226,6 +226,7 @@ def is_jlang(string: str, line=None):
     if any(string.startswith(sign) for sign in JLANG_SIGNS):
         return True
 
+    # Checks to see if the string is valid python (TODO - REMOVE)
     try:
         old_stdout = sys.stdout
         sys.stdout = mystdout = StringIO()
@@ -259,6 +260,10 @@ def parse_lang(file, dump_py):
     modules = ""
     indent_level = 0
 
+    with open(file, "r") as f:
+        raw_hash = hashlib.sha256(f.read().encode("utf-8"))
+        hex_hash = raw_hash.hexdigest()
+
     # Adds the file provided by the end user
     # FIX: Ident the loaded modules to optimize
     user_file, indent_level_main = generate_lang(f"{file}")
@@ -283,13 +288,10 @@ def parse_lang(file, dump_py):
         print(indent_level)
         raise IndentationError
 
-    if not os.path.isdir("__jcache__"):
-        os.mkdir("__jcache__")
+    if not os.path.isdir(JCACHE_DIR_NAME):
+        os.mkdir(JCACHE_DIR_NAME)
 
     block_string = python_string.encode("utf-8")
-
-    raw_hash = hashlib.sha256(block_string)
-    hex_hash = raw_hash.hexdigest()
 
     if "/" in file:
         python_string = f"HASH_{file[file.rindex('/'):file.rindex('.')]}='{hex_hash}'\n" + python_string
@@ -298,15 +300,49 @@ def parse_lang(file, dump_py):
         python_string = f"HASH_{file[:file.rindex('.')]}='{hex_hash}'\n" + python_string
 
     # Dumps the output into the nearest compiled_files folder
-    with open("__jcache__\\" + file[:file.index(".")] + ".jpy", "wb+") as jpy:
+    with open(JCACHE_DIR_NAME + "\\" + file[:file.index(".")] + ".jpy", "wb+") as jpy:
         jpy.write(python_string.encode('utf-8'))
 
     return transpiled
 
 
+def check_for_cache(directory, filename):
+    """
+    Checks if there is a jcache in the given directory. 
+    If so checks for the existance of the file in the cache.
+    If exists checks if the file is the same as the source file by hash.
+    :param directory: The list of files in the directory
+    :param filename: The name of the file being checked for in the cache
+    :return bool: If the file is able to be used fro the cache 
+    """
+
+    if JCACHE_DIR_NAME in directory:
+        cache = os.listdir(os.getcwd() + f"/{JCACHE_DIR_NAME}")
+        if filename[:-5]+"jpy" in cache:
+            with open(os.getcwd()+f"/{JCACHE_DIR_NAME}/"+filename[:-5]+"jpy", "r") as f:
+                first_line = ""
+                for line in f:
+                    first_line = line
+                    break
+
+                hash = first_line[4+len(filename[:-5])+2:-2]
+                raw_hash = ""
+                
+                with open(file, "r") as f:
+                    raw_hash = hashlib.sha256(f.read().encode('utf-8'))
+                    hex_hash = raw_hash.hexdigest() 
+
+                if hash == hex_hash:
+                    return True
+    
+    return False
+
+
 if __name__ == "__main__":
 
     start_time = datetime.now()
+
+    dir = os.listdir()
 
     dump_py = False
     run = True
@@ -340,22 +376,33 @@ if __name__ == "__main__":
         print("\033[91mDumping Files to Python Not Yet Supported!\033[00m")
         exit()
 
+    # Checks if the current version of the file has been compiled before
+    if check_for_cache(dir, file):
+        ofile = file
+        file = os.getcwd()+f"\\{JCACHE_DIR_NAME}" + "\\" + ofile[:-5] +"jpy"
+
+    # Checks if a source jlang file is being used 
     if file.endswith(".jlang"):
+
         filename = file.replace(".jlang", "")
+
+        # Parses jlang in jpy
         transpiled = parse_lang(file, dump_py)
 
-        with open(f"__jcache__/{filename}.jpy", "r") as jpy:
+        with open(f"{JCACHE_DIR_NAME}/{filename}.jpy", "r") as jpy:
             compiled = jpy.read()
 
         if show_result:
             print(transpiled)
 
+        # Evaluates the jpy as python (Allows for future implementations of interperter ...)
         if run: exec(str(compiled.strip()))
 
         end_time = datetime.now()
 
 
     elif file.endswith(".jpy"):
+
         with open(f"{file}", "r") as jpy:
             compiled = jpy.read()
 
