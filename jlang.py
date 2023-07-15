@@ -407,7 +407,7 @@ if __name__ == "__main__":
             compiled = jpy.read()
 
         if show_result:
-            print(transpiled)
+            print(compiled)
 
         if run: exec(str(compiled.strip()))
     
