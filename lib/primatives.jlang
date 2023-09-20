@@ -112,6 +112,12 @@ class ArrayList(object){
     }
 }
 
+class List(ArrayList){
+   func __init__(self, _value){
+        super().__init__(_value)
+   }    
+}
+
 class Integer(object, int){
 
     func __init__(self, value){
